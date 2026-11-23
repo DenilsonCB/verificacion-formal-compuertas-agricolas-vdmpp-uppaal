@@ -17,7 +17,7 @@
 // Configuración general de página (16:9)
 #set page(
   paper: "presentation-16-9",
-  margin: (x: 1.4cm, top: 1.05cm, bottom: 1.25cm),
+  margin: (x: 1.35cm, top: 1.0cm, bottom: 1.2cm),
   footer-descent: 25%,
   background: place(
     center + horizon,
@@ -46,15 +46,6 @@
   }
 )
 
-#show raw.where(block: true): it => block(
-  fill: none,
-  stroke: 0.6pt + borde-sutil,
-  inset: (x: 8pt, y: 5pt),
-  radius: 3pt,
-  width: 100%,
-  text(size: 9.2pt, fill: black, it)
-)
-
 #let callout-card(tag, content) = [
   #v(1fr)
   #block(
@@ -64,33 +55,33 @@
     radius: (right: 3pt),
     width: 100%,
     [
-      #text(size: 9pt, weight: "bold", fill: granate-unsa)[#tag] \
+      #text(size: 8.8pt, weight: "bold", fill: granate-unsa)[#tag] \
       #v(-0.18cm)
-      #text(size: 10.5pt, fill: black)[#content]
+      #text(size: 10.3pt, fill: black)[#content]
     ]
   )
 ]
 
 #let content-header(title, breadcrumb) = [
   #grid(
-    columns: (1fr, 2.9cm),
+    columns: (1fr, 2.8cm),
     gutter: 0.5cm,
     align: (left + horizon, right + horizon),
     [
       #rect(
         fill: granate-unsa,
         radius: 4pt,
-        inset: (x: 11pt, y: 6pt),
+        inset: (x: 11pt, y: 5.5pt),
         width: 100%,
-        text(fill: white, size: 14pt, weight: "bold")[#title]
+        text(fill: white, size: 13.8pt, weight: "bold")[#title]
       )
     ],
     [
-      #image("fig/unsa.png", width: 2.7cm)
+      #image("fig/unsa.png", width: 2.6cm)
     ]
   )
   #v(-0.14cm)
-  #text(size: 8.3pt, fill: texto-gris, style: "italic")[#breadcrumb]
+  #text(size: 8.2pt, fill: texto-gris, style: "italic")[#breadcrumb]
   #v(0.14cm)
 ]
 
@@ -167,18 +158,18 @@
   ]
 )
 
-#callout-card("APORTE CENTRAL", [
-  Sustituir el control On-Off idealizado por una especificación formal verificada: demostrar mediante contraejemplo cuándo falla un cierre lento ($T_("cierre") >= 9 upright(s)$), certificar la cota segura ($T_("cierre") <= 8 upright(s)$) con histéresis y validar tolerancia a fallos mediante Watchdog y aliviadero.
+#callout-card("PRINCIPAL APORTE DEL PROYECTO", [
+  A diferencia de un SCADA convencional con pruebas básicas, aplicamos *métodos formales (VDM++ y UPPAAL)* antes de implementar en campo: demostramos cuándo falla un cierre lento ($T_("cierre") >= 9 upright(s)$), certificamos el límite seguro ($T_("cierre") <= 8 upright(s)$) y validamos respaldo ante atascos.
 ])
 
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 2: CONTEXTO Y APORTE DIFERENCIAL
+// DIAPOSITIVA 2: PROBLEMA Y APORTE CON MÉTODOS FORMALES
 // =====================================================================
 #content-header(
-  "1. Problema Técnico y Enfoque con Métodos Formales",
-  "PROYECTO FINAL · ESPECIFICACIÓN Y VERIFICACIÓN PREVIA AL DESPLIEGUE EN CAMPO"
+  "1. Problema Técnico y Principal Aporte del Proyecto",
+  "PROYECTO FINAL · POR QUÉ VALIDAR CON MÉTODOS FORMALES ANTES DEL PLC"
 )
 
 #grid(
@@ -187,37 +178,37 @@
   [
     #block(
       stroke: 0.6pt + borde-sutil,
-      inset: 10pt,
+      inset: 11pt,
       radius: 4pt,
       width: 100%,
       [
-        #text(weight: "bold", fill: granate-unsa, size: 12pt)[Limitación de los SCADA Convencionales]
-        #v(0.15cm)
-        - *Pruebas de caja negra:* Los PLC agrícolas operan con umbrales empíricos sin probar ausencia de desborde en todos los escenarios de concurrencia.
-        - *Cierre idealizado:* Asumir actuación instantánea ignora el periodo de muestreo del sensor ($T_s = 1 upright(s)$) y el tiempo mecánico de cierre ($T_("cierre")$).
-        - *Chattering mecánico:* Sin banda de histéresis ni control gradual, las compuertas oscilan alrededor del umbral y sufren fatiga o atascos por sedimentos.
+        #text(weight: "bold", fill: granate-unsa, size: 12pt)[Limitación de los SCADA Tradicionales]
+        #v(0.2cm)
+        - *Pruebas parciales:* Solo prueban casos aislados sin garantizar que nunca ocurra un desborde.
+        - *Cierre instantáneo irreal:* No consideran el tiempo que demora el sensor en leer (cada `1 s`) ni los segundos que tarda el motor en bajar la compuerta.
+        - *Oscilación mecánica:* Al abrir y cerrar sobre un mismo umbral, la compuerta se desgasta o puede atascarse.
       ]
     )
   ],
   [
     #block(
-      stroke: 0.8pt + granate-unsa,
-      inset: 10pt,
+      stroke: 0.9pt + granate-unsa,
+      inset: 11pt,
       radius: 4pt,
       width: 100%,
       [
-        #text(weight: "bold", fill: granate-unsa, size: 12pt)[Solución Formal en Dos Niveles]
-        #v(0.15cm)
-        - *VDM++ (Overture v3.0.2):* Control preventivo en tres estados (`<NORMAL>`, `<PRECAUCION>` al 50%, `<CRITICO>`), invariantes de volumen en `Canal` y registro secuencial `seq`.
-        - *UPPAAL 5.0 (WCRT):* Modela el estado `Compuerta.Cerrando` acoplado al llenado de `MedioAmbiente` y la histéresis $[60, 80] upright(m)^3$.
-        - *Extensión Tolerante a Fallos:* Incorpora fallo no determinista `Compuerta.Atascada`, temporizador Watchdog ($5 upright(s)$) y quinto autómata `Aliviadero` ($2 upright(s)$).
+        #text(weight: "bold", fill: granate-unsa, size: 12pt)[Aporte con VDM++ y UPPAAL]
+        #v(0.2cm)
+        - *VDM++ (Overture):* Control preventivo en 3 niveles (`<NORMAL>`, `<PRECAUCION>` al 50%, `<CRITICO>`) con invariantes de seguridad en el canal.
+        - *UPPAAL 5.0 (WCRT):* Simula el tiempo real de cierre y encuentra el punto exacto donde el canal se desborda (`9 s` o más).
+        - *Tolerancia a fallos:* Si la compuerta se atasca, un temporizador de respaldo abre un aliviadero en `2 s`.
       ]
     )
   ]
 )
 
-#callout-card("CRITERIO DE INGENIERÍA", [
-  La verificación formal permite certificar los límites temporales de hardware y las reglas de contención antes de parametrizar controladores industriales en campo.
+#callout-card("VALOR AGREGADO", [
+  No programamos un PLC empírico: certificamos matemáticamente los tiempos máximos de respuesta y las reglas de seguridad antes de llevar el sistema a campo.
 ])
 
 #pagebreak()
@@ -226,46 +217,46 @@
 // DIAPOSITIVA 3: VDM++ Y COBERTURA REAL EN OVERTURE
 // =====================================================================
 #content-header(
-  "2. Especificación en VDM++ y Cobertura Real en Overture v3.0.2",
-  "PROYECTO FINAL · 5 CLASES FORMALES, INVARIANTES Y 100.0% DE COBERTURA"
+  "2. Especificación en VDM++ y Cobertura en Overture v3.0.2",
+  "PROYECTO FINAL · 5 CLASES FORMALES Y 100.0% DE COBERTURA"
 )
 
 #grid(
-  columns: (0.95fr, 1.15fr),
-  gutter: 0.65cm,
+  columns: (0.72fr, 1.38fr),
+  gutter: 0.55cm,
   align: (top, top),
   [
     #block(stroke: 0.6pt + borde-sutil, inset: (x: 8pt, y: 5pt), radius: 3pt, width: 100%)[
       #text(fill: granate-unsa, weight: "bold", size: 10pt)[1. `Sensor.vdmpp`:]
-      #text(size: 9.4pt)[ Invariante biunívoco en `LecturaSensor` para tres rangos de caudal (`<= 10`, `10..15`, `> 15` $m^3\/s$).]
+      #text(size: 9.2pt)[ Clasifica el caudal en 3 niveles (`<NORMAL>`, `<PRECAUCION>`, `<CRITICO>`).]
     ]
-    #v(0.06cm)
+    #v(0.08cm)
     #block(stroke: 0.6pt + borde-sutil, inset: (x: 8pt, y: 5pt), radius: 3pt, width: 100%)[
       #text(fill: granate-unsa, weight: "bold", size: 10pt)[2. `Compuerta.vdmpp` y 3. `Canal.vdmpp`:]
-      #text(size: 9.4pt)[ Compuerta con `<ABIERTA>`, `<PARCIAL>` (50%) y `<CERRADA>` bajo bloques `atomic`; canal con `volumen_actual <= capacidad_maxima`.]
+      #text(size: 9.2pt)[ Apertura al 100%, 50% o 0%; el volumen nunca supera la capacidad máxima.]
     ]
-    #v(0.06cm)
+    #v(0.08cm)
     #block(stroke: 0.8pt + granate-unsa, inset: (x: 8pt, y: 5pt), radius: 3pt, width: 100%)[
       #text(fill: granate-unsa, weight: "bold", size: 10pt)[4. `Controlador.vdmpp`:]
-      #text(size: 9.4pt)[ Integra `Map` (`sensores`, `compuertas`, `canales`), `Set` (`alarmas_activas`) y `Seq` (`historial_telemetria`). `EvaluarRed()` estrangula al 50% en `<PRECAUCION>` y cierra con alivio en `<CRITICO>`.]
+      #text(size: 9.2pt)[ Coordina mapas de sensores/compuertas/canales, alarmas e historial cronológico.]
     ]
-    #v(0.06cm)
+    #v(0.08cm)
     #block(stroke: 0.6pt + borde-sutil, inset: (x: 8pt, y: 5pt), radius: 3pt, width: 100%)[
       #text(fill: granate-unsa, weight: "bold", size: 10pt)[5. `Test.vdmpp`:]
-      #text(size: 9.4pt)[ 6 escenarios con `AssertTrue`: `EjecutarPruebas() = true`, 24 operaciones y 113 invocaciones sin errores de sintaxis ni tipos.]
+      #text(size: 9.2pt)[ 6 escenarios de prueba; `EjecutarPruebas() = true` sin errores.]
     ]
   ],
   [
     #fig-frame(
       "fig/cobertura_overture.png",
-      [Captura real de Overture Tool v3.0.2: cobertura `100.0%` en `Canal` (10), `Compuerta` (16), `Controlador` (39), `Sensor` (18) y `Test` (30).],
-      max-height: 7.0cm
+      [Overture Tool v3.0.2: cobertura `100.0%` en `Canal`, `Compuerta`, `Controlador`, `Sensor` y `Test` (113 invocaciones).],
+      max-height: 8.1cm
     )
   ]
 )
 
-#callout-card("VALIDACIÓN VDM++", [
-  El acceso directo a atributos `.id` dentro de `inv` y `pre` mantiene contratos puros verificables en Overture Tool v3.0.2 con cobertura total en las cinco clases.
+#callout-card("VALIDACIÓN ESTÁTICA", [
+  Las cinco clases cumplen todos sus invariantes y precondiciones con cobertura total verificada en Overture Tool v3.0.2.
 ])
 
 #pagebreak()
@@ -275,41 +266,37 @@
 // =====================================================================
 #content-header(
   "3. Autómatas Temporizados y Simulación en UPPAAL 5.0",
-  "PROYECTO FINAL · CIERRE ELECTROMECÁNICO, HISTÉRESIS Y ACOPLAMIENTO CON EL CANAL"
+  "PROYECTO FINAL · CIERRE GRADUAL, HISTÉRESIS Y DINÁMICA DEL CANAL"
 )
 
 #grid(
-  columns: (1.05fr, 1.0fr),
-  gutter: 0.65cm,
+  columns: (0.95fr, 1.15fr),
+  gutter: 0.55cm,
   align: (top, top),
   [
     #fig-frame(
       "fig/automata_compuerta.png",
-      [(a) `Compuerta`: cierre gradual en `Cerrando` ($t_("act") <= T_("CIERRE")$).],
-      max-height: 3.7cm
+      [(a) `Compuerta`: cierre físico en `Cerrando` ($t_("act") <= T_("CIERRE")$).],
+      max-height: 4.35cm
     )
-    #v(0.12cm)
+    #v(0.15cm)
     #fig-frame(
       "fig/automata_sensor.png",
-      [(b) `Sensor`: banda de histéresis $[60, 80] upright(m)^3$ con muestreo cada $1 upright(s)$.],
-      max-height: 3.3cm
+      [(b) `Sensor`: cierra en `>= 80 m³` y reabre recién en `<= 60 m³`.],
+      max-height: 3.35cm
     )
   ],
   [
     #fig-frame(
       "fig/simulacion_inicio_cierre.png",
-      [(c) Simulador concreto: al alcanzar `volumen = 80`, `Sensor` emite `alerta_peligro` y `Controlador` ordena `cerrar_compuerta`.],
-      max-height: 6.3cm
+      [(c) Simulador: al llegar a `volumen = 80`, el sensor alerta y el controlador ordena cerrar mientras el canal sigue llenándose.],
+      max-height: 7.45cm
     )
-    #v(0.1cm)
-    #text(size: 9.5pt)[
-      *Acoplamiento físico:* Durante `Compuerta.Cerrando`, `MedioAmbiente` permanece en `Llenando` (`+5 m³/2s`); recién conmuta a `Drenando` al sincronizar `compuerta_cerrada?`.
-    ]
   ]
 )
 
-#callout-card("HISTÉRESIS Y CICLO DE RECUPERACIÓN", [
-  La compuerta solo recibe la orden de reapertura cuando el volumen desciende hasta `NIVEL_SEGURO = 60`, evitando oscilaciones en el umbral crítico de `80 m³`.
+#callout-card("HISTÉRESIS ANTI-OSCILACIÓN", [
+  La compuerta no se reabre apenas baja de `80 m³`: espera hasta `NIVEL_SEGURO = 60 m³` para evitar aperturas y cierres repetidos.
 ])
 
 #pagebreak()
@@ -319,15 +306,15 @@
 // =====================================================================
 #content-header(
   "4. Análisis WCRT: Certificación Verde y Contraejemplo Rojo",
-  "PROYECTO FINAL · FRONTERA TEMPORAL DE SEGURIDAD EN UPPAAL 5.0"
+  "PROYECTO FINAL · LÍMITE TEMPORAL DE SEGURIDAD EN UPPAAL 5.0"
 )
 
 #grid(
-  columns: (0.95fr, 1.15fr),
-  gutter: 0.7cm,
+  columns: (0.88fr, 1.22fr),
+  gutter: 0.6cm,
   align: (top, top),
   [
-    #text(weight: "bold", fill: granate-unsa, size: 11.5pt)[Barrido de Frontera WCRT (`verifyta.exe`)]
+    #text(weight: "bold", fill: granate-unsa, size: 11.5pt)[Barrido de Tiempos de Cierre]
     #v(0.12cm)
     #table(
       columns: (auto, auto, 1fr),
@@ -336,97 +323,126 @@
       fill: (x, y) => if y == 0 { granate-unsa } else { white },
       [*#text(fill: white, size: 9.5pt)[$T_("CIERRE")$]*],
       [*#text(fill: white, size: 9.5pt)[Pico]*],
-      [*#text(fill: white, size: 9.5pt)[`A[] volumen <= 100`]*],
+      [*#text(fill: white, size: 9.5pt)[`volumen <= 100`]*],
       [#text(size: 9.5pt)[6 s (Nominal)]], [#text(size: 9.5pt)[95 $m^3$]], [#text(size: 9.5pt)[Conforme (7/7 CTL)]],
-      [#text(size: 9.5pt)[8 s (Límite)]], [#text(size: 9.5pt)[100 $m^3$]], [#text(size: 9.5pt)[Conforme (cota máxima)]],
+      [#text(size: 9.5pt)[8 s (Límite)]], [#text(size: 9.5pt)[100 $m^3$]], [#text(size: 9.5pt)[Conforme (límite)]],
       [#text(size: 9.5pt)[9 s]], [#text(size: 9.5pt)[105 $m^3$]], [#text(size: 9.5pt, fill: granate-unsa, weight: "bold")[Falla (desborde)]],
       [#text(size: 9.5pt)[10 s (Contraej.)]], [#text(size: 9.5pt)[105 $m^3$]], [#text(size: 9.5pt, fill: granate-unsa, weight: "bold")[Falla en `Cerrando`]],
     )
-    #v(0.2cm)
-    #text(size: 9.6pt)[
-      *Causa del contraejemplo:* Con $1 upright(s)$ de desfase de muestreo del sensor y llenado cada $2 upright(s)$, un cierre de $T_("CIERRE") >= 9 upright(s)$ permite cinco pulsos adicionales ($80 + 5 times 5 = 105 upright(m)^3 > 100 upright(m)^3$).
+    #v(0.25cm)
+    #text(size: 9.8pt)[
+      *Por qué falla con `>= 9 s`:* Mientras la compuerta baja lentamente, el agua sigue entrando cada `2 s` y alcanza `105 m³` (superando el máximo de `100 m³`).
     ]
   ],
   [
     #fig-frame(
       "fig/verificacion_propiedades.png",
-      [(a) `ControlRiesgo.xml` ($T_("CIERRE") = 6 upright(s)$): 7/7 propiedades CTL satisfechas en verde.],
-      max-height: 3.1cm
+      [(a) Modelo nominal (`6 s`): 7/7 propiedades CTL en verde.],
+      max-height: 2.95cm
     )
-    #v(0.12cm)
+    #v(0.15cm)
     #fig-frame(
       "fig/contraejemplo_desborde.png",
-      [(b) `ControlRiesgo_Contraejemplo.xml` ($T_("CIERRE") = 10 upright(s)$): violación en rojo de `A[] volumen <= MAX_CAPACIDAD`.],
-      max-height: 4.1cm
+      [(b) Contraejemplo (`10 s`): propiedad `volumen <= MAX_CAPACIDAD` en rojo.],
+      max-height: 4.55cm
     )
   ]
 )
 
 #callout-card("COTA CERTIFICADA", [
-  UPPAAL demuestra de forma exhaustiva que el actuador debe cerrar en $T_("CIERRE") <= 8 upright(s)$ para garantizar contención sin desbordamiento bajo el peor caso de desfase temporal.
+  UPPAAL demuestra matemáticamente que el motor de la compuerta debe cerrar en `8 segundos o menos` para evitar desbordamientos.
 ])
 
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 6: EXTENSIÓN TOLERANTE A FALLOS (WATCHDOG Y ALIVIADERO)
+// DIAPOSITIVA 6: TOLERANCIA A FALLOS (AUTÓMATAS DE COMPUERTA Y CONTROLADOR)
 // =====================================================================
 #content-header(
-  "5. Extensión Tolerante a Fallos Mecánicos (Watchdog y Aliviadero)",
-  "PROYECTO FINAL · MODELO ControlRiesgo_ToleranteFallos.xml (6/6 PROPIEDADES CTL)"
+  "5. Extensión Tolerante a Fallos: Atasco y Watchdog",
+  "PROYECTO FINAL · MODELO ControlRiesgo_ToleranteFallos.xml (PARTE 1)"
 )
 
-#text(size: 9.6pt)[
-  Para cubrir atascos físicos por sedimentos, se verificó un modelo independiente con $T_("CIERRE") = 4 upright(s)$, temporizador Watchdog $T_("WATCHDOG") = 5 upright(s)$ en `Controlador.EsperandoCierre` y un quinto autómata `Aliviadero` ($T_("ALIVIO") = 2 upright(s)$). Si la compuerta pasa a `Atascada`, el controlador deriva el caudal al aliviadero y queda bloqueado en `ModoFalloSeguro`.
+#text(size: 10pt)[
+  Para cubrir atascos mecánicos por sedimentos, se agregó el estado `Atascada` en `Compuerta` y un temporizador de vigilancia (*Watchdog* de `5 s`) en `Controlador`.
 ]
-#v(0.1cm)
+#v(0.18cm)
 
 #grid(
-  columns: (1fr, 1.15fr),
-  column-gutter: 0.6cm,
-  row-gutter: 0.12cm,
+  columns: (0.95fr, 1.15fr),
+  gutter: 0.6cm,
   align: (center + top, center + top),
   [
     #fig-frame(
       "fig/automata_compuerta_fallos.png",
-      [(a) `Compuerta`: transición no determinista hacia `Atascada`.],
-      max-height: 3.7cm
+      [(a) `Compuerta`: si falla durante `Cerrando`, pasa al estado `Atascada`.],
+      max-height: 6.7cm
     )
   ],
   [
     #fig-frame(
       "fig/automata_controlador_fallos.png",
-      [(b) `Controlador`: Watchdog (`t_wd <= T_WATCHDOG`) y `ModoFalloSeguro`.],
-      max-height: 3.7cm
-    )
-  ],
-  [
-    #fig-frame(
-      "fig/automata_aliviadero.png",
-      [(c) Quinto autómata `Aliviadero` ($T_("ALIVIO") = 2 upright(s)$).],
-      max-height: 2.6cm
-    )
-  ],
-  [
-    #fig-frame(
-      "fig/verificacion_tolerante_fallos.png",
-      [(d) Verifier de UPPAAL 5.0: 6/6 fórmulas CTL satisfechas en verde.],
-      max-height: 3.2cm
+      [(b) `Controlador`: si expira `t_wd == 5 s` sin confirmación de cierre, activa el aliviadero y entra en `ModoFalloSeguro`.],
+      max-height: 6.7cm
     )
   ]
 )
 
-#callout-card("GARANTÍA ANTE ATASCO MECÁNICO", [
-  Se verificó `A[] volumen <= MAX_CAPACIDAD`, `Sensor.Critico --> (Compuerta.Cerrada or Aliviadero.Abierto)` y `A[] (Controlador.ModoFalloSeguro imply Compuerta.Atascada)` sin bloqueos (`A[] not deadlock`).
+#callout-card("DETECCIÓN DE FALLO", [
+  Si la compuerta no confirma su cierre dentro de los `5 s` del *Watchdog*, el controlador asume atasco y evita seguir operando la compuerta dañada.
 ])
 
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 7: CONCLUSIONES Y REFERENCIAS CLAVE
+// DIAPOSITIVA 7: TOLERANCIA A FALLOS (ALIVIADERO Y VERIFICACIÓN CTL)
 // =====================================================================
 #content-header(
-  "6. Conclusiones y Referencias Clave",
+  "6. Extensión Tolerante a Fallos: Aliviadero y Verificación CTL",
+  "PROYECTO FINAL · MODELO ControlRiesgo_ToleranteFallos.xml (PARTE 2)"
+)
+
+#text(size: 10pt)[
+  Al detectarse el atasco, entra en acción el quinto autómata `Aliviadero` (`2 s` de apertura), logrando contener el nivel de agua sin bloqueos en las 6 propiedades CTL.
+]
+#v(0.2cm)
+
+#grid(
+  columns: (1fr, 1.05fr),
+  gutter: 0.65cm,
+  align: (center + horizon, center + top),
+  [
+    #align(center)[
+      #box(
+        stroke: 0.5pt + borde-sutil,
+        inset: 4pt,
+        radius: 2pt,
+        image("fig/automata_aliviadero.png", width: 100%)
+      ) \
+      #v(-0.12cm)
+      #text(size: 8.2pt, fill: black)[(a) Quinto autómata `Aliviadero`: abre en `2 s` y emite `alivio_activo!`.]
+    ]
+  ],
+  [
+    #fig-frame(
+      "fig/verificacion_tolerante_fallos.png",
+      [(b) Verifier de UPPAAL 5.0: 6/6 fórmulas CTL satisfechas en verde.],
+      max-height: 6.4cm
+    )
+  ]
+)
+
+#callout-card("GARANTÍA DE SEGURIDAD ANTE ATASCO", [
+  Se certificaron `not deadlock`, `volumen <= MAX_CAPACIDAD` y `Sensor.Critico --> (Compuerta.Cerrada or Aliviadero.Abierto)`.
+])
+
+#pagebreak()
+
+// =====================================================================
+// DIAPOSITIVA 8: CONCLUSIONES Y REFERENCIAS CLAVE
+// =====================================================================
+#content-header(
+  "7. Conclusiones y Referencias Clave",
   "PROYECTO FINAL · SÍNTESIS DE RESULTADOS VERIFICADOS"
 )
 
@@ -435,15 +451,15 @@
   gutter: 0.85cm,
   [
     #text(weight: "bold", fill: granate-unsa, size: 12pt)[Conclusiones]
-    #v(0.12cm)
-    - *Especificación VDM++:* Se consolidaron cinco clases formales con control preventivo en tres niveles, balance de volumen en `Canal` e historial secuencial, obteniendo 100.0% de cobertura en Overture Tool v3.0.2.
-    - *Cota WCRT en UPPAAL 5.0:* El modelado del cierre electromecánico y la histéresis $[60, 80]$ demostró mediante contraejemplo el desborde para $T_("CIERRE") >= 9 upright(s)$ y certificó las siete propiedades CTL para $T_("CIERRE") <= 8 upright(s)$ (pico de $95 upright(m)^3$ a $6 upright(s)$).
-    - *Tolerancia a fallos:* La arquitectura con Watchdog ($5 upright(s)$) y `Aliviadero` ($2 upright(s)$) garantizó contención segura aun ante atasco de la compuerta principal (6/6 propiedades CTL).
-    - *Trabajo futuro:* Traducción formal de las reglas certificadas hacia lógica de PLC mediante PLCverif y modelado hidrodinámico de tramos en cascada.
+    #v(0.15cm)
+    - *Especificación VDM++:* Cinco clases formales con control preventivo gradual y balance de volumen en `Canal`, validadas al 100.0% en Overture Tool v3.0.2.
+    - *Cota WCRT en UPPAAL 5.0:* Se demostró por contraejemplo el desborde para `T_CIERRE >= 9 s` y se certificó seguridad total para `T_CIERRE <= 8 s` (pico de `95 m³` a `6 s`).
+    - *Tolerancia a fallos:* Con *Watchdog* (`5 s`) y `Aliviadero` (`2 s`), el sistema contiene el caudal aun ante atasco mecánico (6/6 propiedades CTL).
+    - *Trabajo futuro:* Traducción a lógica de PLC mediante PLCverif y acoplamiento de múltiples canales en cascada.
   ],
   [
     #text(weight: "bold", fill: granate-unsa, size: 12pt)[Referencias Bibliográficas]
-    #v(0.12cm)
+    #v(0.15cm)
     #text(size: 9.5pt)[
       [1] B. Wahlin y D. Zimbelman, _Canal Automation for Irrigation Systems (ASCE MOP 131)_, Reston, VA: ASCE, 2016. \
       #v(0.12cm)
@@ -459,5 +475,5 @@
 )
 
 #callout-card("CIERRE", [
-  La combinación de VDM++ y UPPAAL transforma el diseño de compuertas de riego en una especificación auditable con márgenes temporales y mecanismos de contingencia demostrados matemáticamente.
+  La verificación formal conjunta con VDM++ y UPPAAL convierte el control de compuertas en una especificación auditable con garantías matemáticas demostradas.
 ])
