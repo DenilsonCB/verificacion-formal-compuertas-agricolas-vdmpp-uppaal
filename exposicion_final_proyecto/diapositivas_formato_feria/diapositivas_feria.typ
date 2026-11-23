@@ -1,6 +1,6 @@
 // =====================================================================
 // DIAPOSITIVAS - FORMATO FERIA DE PROYECTOS EPIS UNSA 2026
-// CATEGORÍA II - INTERMEDIO (7 MINUTOS)
+// 11 LÁMINAS · DISEÑO LIMPIO SIN CAJAS DE TEXTO · 7 MINUTOS
 // =====================================================================
 
 #set document(
@@ -8,18 +8,22 @@
   author: "Grupo 3 - Escuela Profesional de Ingeniería de Sistemas - UNSA"
 )
 
-#set text(font: ("Arial", "Segoe UI"), size: 11pt, fill: black)
+#set text(font: ("Arial", "Segoe UI"), size: 12.5pt, fill: black)
 
-// Paleta oficial Feria de Proyectos UNSA (sin cajas grises, texto en #000000)
+// Paleta oficial Feria de Proyectos UNSA (sin cajas grises ni marcos de texto)
 #let granate-unsa  = rgb("#7a1315")
 #let naranja-feria = rgb("#ed7d31")
 #let gris-texto    = rgb("#475569")
 #let gris-borde    = rgb("#cbd5e1")
+#let azul-kw       = rgb("#0d5caf")
+#let teal-tipo     = rgb("#267f99")
+#let verde-com     = rgb("#4b7f52")
+#let rojo-quote    = rgb("#a31515")
 
 // Configuración de página 16:9 fiel a la plantilla oficial Feria de Proyectos
 #set page(
   paper: "presentation-16-9",
-  margin: (x: 1.3cm, top: 0.85cm, bottom: 1.95cm),
+  margin: (x: 1.35cm, top: 0.85cm, bottom: 1.95cm),
   footer-descent: 0.18cm,
   fill: white,
   footer: context {
@@ -57,262 +61,273 @@
   }
 )
 
-#let slide-header(title, subtitle: none) = [
-  #text(fill: black, size: 19pt, weight: "bold")[#title]
-  #if subtitle != none [
-    \ #v(-0.12cm)
-    #text(fill: granate-unsa, size: 9.5pt, weight: "bold")[#subtitle]
-  ]
-  #v(0.22cm)
+#let slide-header(title) = [
+  #text(fill: black, size: 21pt, weight: "bold")[#title]
+  #v(0.28cm)
 ]
 
-#let info-card(title, content, accent: false) = block(
-  fill: white,
-  stroke: if accent { 0.9pt + granate-unsa } else { 0.6pt + gris-borde },
-  inset: (x: 10pt, y: 8pt),
-  radius: 4pt,
-  width: 100%,
-  [
-    #text(size: 10.5pt, weight: "bold", fill: granate-unsa)[#title] \
-    #v(0.1cm)
-    #text(size: 10pt, fill: black)[#content]
-  ]
-)
+#let section-label(label) = [
+  #text(fill: granate-unsa, size: 12.5pt, weight: "bold")[#label]
+  #v(0.14cm)
+]
 
-#let fig-box(path, caption, max-height: 5cm) = [
+#let vdm-code(title, start-line, code-str) = [
+  #text(size: 9.5pt, weight: "bold", fill: granate-unsa)[#title]
+  #v(-0.08cm)
+  #block(
+    fill: none,
+    stroke: 0.5pt + gris-borde,
+    inset: (x: 8pt, y: 6pt),
+    radius: 2pt,
+    width: 100%,
+    {
+      let lines = code-str.trim().split("\n")
+      for (i, ln) in lines.enumerate() {
+        let num = start-line + i
+        box(width: 1.8em, align(right)[#text(font: ("Consolas", "Courier New"), size: 8pt, fill: gris-texto)[#num]])
+        h(0.6em)
+        show regex("\b(class|types|instance variables|operations|inv|pre|post|public|return|dcl|if|then|else|elseif|for|all|in|set|dom|elems|and|union)\b"): kw => text(fill: azul-kw, weight: "bold")[#kw]
+        show regex("\b(token|real|bool|map|to|seq|of|Sensor|Compuerta|Canal|LecturaSensor|Caudal|NivelAlerta)\b"): ty => text(fill: teal-tipo)[#ty]
+        show regex("(<[A-Z_]+>)"): q => text(fill: rojo-quote, weight: "bold")[#q]
+        show regex("(--.*$)"): c => text(fill: verde-com, style: "italic")[#c]
+        text(font: ("Consolas", "Courier New"), size: 8.4pt, fill: black)[#raw(ln)]
+        if i < lines.len() - 1 { linebreak() }
+      }
+    }
+  )
+]
+
+#let fig-clean(path, caption, max-height: 5cm) = [
   #align(center)[
-    #box(
-      stroke: 0.5pt + gris-borde,
-      inset: 3pt,
-      radius: 2pt,
-      image(path, height: max-height)
-    ) \
-    #v(-0.1cm)
-    #text(size: 8.4pt, fill: black)[#caption]
+    #image(path, height: max-height) \
+    #v(-0.08cm)
+    #text(size: 8.8pt, fill: black)[#caption]
   ]
 ]
 
 // =====================================================================
-// DIAPOSITIVA 1: PORTADA (PLANTILLA OFICIAL FERIA DE PROYECTOS 2026)
+// DIAPOSITIVA 1: PORTADA (FIEL A PLANTILLA OFICIAL FERIA DE PROYECTOS)
 // =====================================================================
-#v(-0.15cm)
+#v(-0.1cm)
 #grid(
   columns: (auto, 1fr, auto),
   align: (left + top, center + top, right + top),
   [
-    #image("fig/unsa_horizontal.png", width: 5.7cm)
+    #image("fig/unsa_horizontal.png", width: 5.8cm)
   ],
   [],
   [
-    #image("fig/epis.png", width: 6.6cm)
+    #image("fig/epis.png", width: 6.7cm)
   ]
 )
 
-#v(0.3cm)
+#v(0.55cm)
 
 #align(center)[
-  #text(size: 14.5pt, fill: black)[
+  #text(size: 16pt, fill: black)[
     Facultad de Ingeniería de Producción y Servicios
   ] \
-  #v(0.08cm)
-  #text(size: 19.5pt, weight: "bold", fill: black)[
+  #v(0.12cm)
+  #text(size: 22pt, weight: "bold", fill: black)[
     Escuela Profesional de Ingeniería de Sistemas
   ] \
-  #v(0.35cm)
-  #text(size: 16pt, weight: "bold", fill: granate-unsa)[
-    FERIA DE PROYECTOS 2026 · CATEGORÍA II – INTERMEDIO
-  ] \
-  #v(0.2cm)
+  #v(0.55cm)
   #text(size: 18pt, weight: "bold", fill: black)[
+    FERIA DE PROYECTOS 2026
+  ] \
+  #v(0.32cm)
+  #text(size: 19pt, weight: "bold", fill: granate-unsa)[
     “Verificación Formal de Márgenes Temporales de Cierre (WCRT) y Control Preventivo en Compuertas Agrícolas con VDM++ y UPPAAL”
+  ] \
+  #v(0.65cm)
+  #text(size: 12pt, fill: black)[
+    *Presentado por:* Ayamamani Anasco, Francis · Choquehuanca Bedoya, Brayan · Choquehuanca Berna, William · Quispe Flores, Marco
+  ] \
+  #v(0.35cm)
+  #text(size: 12.5pt, fill: black)[
+    *Docente asesora:* Mg. Maribel Molina Barriga
   ]
 ]
 
-#v(0.45cm)
-
-#grid(
-  columns: (1.25fr, 1fr),
-  gutter: 1.0cm,
-  [
-    #text(size: 10.5pt, weight: "bold", fill: granate-unsa)[Presentado por:] \
-    #v(0.08cm)
-    #text(size: 10.5pt, fill: black)[
-      • Ayamamani Anasco, Francis Willian \
-      • Choquehuanca Bedoya, Brayan Denilson \
-      • Choquehuanca Berna, William Herderson \
-      • Quispe Flores, Marco Ramiro
-    ]
-  ],
-  [
-    #text(size: 10.5pt, weight: "bold", fill: granate-unsa)[Docente Asesora:] \
-    #v(0.08cm)
-    #text(size: 11.5pt, weight: "bold", fill: black)[Mg. Maribel Molina Barriga] \
-    #v(0.18cm)
-    #text(size: 9.8pt, fill: gris-texto)[
-      *Asignatura:* Aspectos Formales de Especificación y Verificación (AFEV) \
-      *Caso de Estudio:* Represa Condoroma / Canal Majes Siguas
-    ]
-  ]
-)
-
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 2: PROBLEMÁTICA Y JUSTIFICACIÓN (RESPONSABILIDAD SOCIAL)
+// DIAPOSITIVA 2: PROBLEMÁTICA Y JUSTIFICACIÓN
 // =====================================================================
-#slide-header("Problemática y Justificación", subtitle: "CONTEXTO REAL EN MAJES SIGUAS Y RESPONSABILIDAD SOCIAL")
+#slide-header("Problemática y Justificación")
 
+#v(0.2cm)
 #grid(
   columns: (1fr, 1fr),
-  gutter: 0.75cm,
+  gutter: 1.4cm,
   [
-    #info-card("PROBLEMA EN CANALES DE RIEGO (AREQUIPA)", [
-      - *Pérdida crítica de agua:* En redes abiertas como Condoroma y Majes Siguas se supera el *40% de pérdidas hídricas* por operación tardía y desbordes (ANA).
-      - *Riesgo en control tradicional:* Los sistemas SCADA/PLC convencionales se prueban por casos aislados y asumen que la compuerta cierra al instante.
-      - *Retardos reales ignorados:* No consideran el tiempo de lectura del sensor (`1 s`) ni los segundos que tarda el motor en bajar la compuerta.
-    ])
+    #section-label("Problemática en Canales de Riego")
+    #set par(leading: 0.78em)
+    - *Más del 40% de pérdida de agua* en redes como Majes Siguas y Condoroma por maniobras tardías y desbordes (ANA).
+    #v(0.35cm)
+    - *SCADA/PLC tradicionales:* Solo validan casos aislados y asumen cierre instantáneo de compuertas.
+    #v(0.35cm)
+    - *Retardos reales ignorados:* No consideran el muestreo del sensor (`1 s`) ni el tiempo mecánico de cierre del motor.
   ],
   [
-    #info-card("JUSTIFICACIÓN Y RESPONSABILIDAD SOCIAL", [
-      - *Protección del recurso hídrico:* En una región árida como Arequipa, evitar un desborde protege cultivos, infraestructura de concreto y agua para miles de agricultores.
-      - *Seguridad antes del hardware:* Verificar matemáticamente la lógica *antes* de programar un PLC evita fallos costosos en campo.
-      - *Prevención de desgaste:* Evitar cierres bruscos y oscilaciones prolonga la vida útil de las compuertas.
-    ], accent: true)
+    #section-label("Justificación e Impacto Social")
+    #set par(leading: 0.78em)
+    - *Cuidado del recurso hídrico:* En zonas áridas de Arequipa, prevenir desbordes protege cultivos y canales de concreto.
+    #v(0.35cm)
+    - *Seguridad previa al hardware:* Verificar matemáticamente la lógica *antes* de programar el PLC evita fallos en campo.
+    #v(0.35cm)
+    - *Menor desgaste mecánico:* Evitar aperturas y cierres repetidos prolonga la vida útil de las compuertas.
   ]
 )
 
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 3: OBJETIVOS, ALCANCE Y PRINCIPAL APORTE
+// DIAPOSITIVA 3: OBJETIVOS, REQUERIMIENTOS Y PRINCIPAL APORTE
 // =====================================================================
-#slide-header("Objetivos, Alcance y Principal Aporte", subtitle: "DIFERENCIAL CON MÉTODOS FORMALES FRENTE A UN SCADA GENÉRICO")
+#slide-header("Objetivos, Requerimientos y Principal Aporte")
 
+#v(0.15cm)
 #grid(
-  columns: (1fr, 1fr),
-  gutter: 0.75cm,
+  columns: (1fr, 1.05fr),
+  gutter: 1.3cm,
   [
-    #info-card("OBJETIVOS DEL PROYECTO", [
-      - *Objetivo general:* Especificar y verificar formalmente el control de compuertas agrícolas para certificar ausencia de desbordes bajo retardos reales.
-      - *Específico 1 (VDM++):* Modelar control preventivo en 3 niveles e invariantes de capacidad con *100% de cobertura* en Overture.
-      - *Específico 2 (UPPAAL):* Determinar el tiempo máximo seguro de cierre (*WCRT*) mediante contraejemplo y verificación CTL.
-      - *Específico 3 (Respaldo):* Verificar un mecanismo tolerante a fallos ante atascos mecánicos.
-    ])
+    #section-label("Objetivos y Principal Aporte")
+    #set par(leading: 0.72em)
+    - *Especificación VDM++:* Control preventivo en 3 niveles (`<NORMAL>`, `<PRECAUCION>` al 50%, `<CRITICO>`) validado al *100%*.
+    #v(0.28cm)
+    - *Frontera WCRT en UPPAAL:* Demostrar por contraejemplo que con `>= 9 s` desborda (`105 m³`) y certificar `<= 8 s`.
+    #v(0.28cm)
+    - *Tolerancia a fallos:* Temporizador *Watchdog* (`5 s`) y `Aliviadero` (`2 s`) ante atasco mecánico.
   ],
   [
-    #info-card("ALCANCE Y PRINCIPAL APORTE", [
-      - *Alcance:* Especificación y verificación formal matemática previa al despliegue en PLC (sin código propietario de hardware).
-      - *Aporte 1 (Control gradual):* En nivel `<PRECAUCION>` reduce apertura al *50%* antes de llegar a emergencia.
-      - *Aporte 2 (Frontera WCRT):* Demuestra que con cierre `>= 9 s` el canal desborda (`105 m³`) y certifica seguridad para `<= 8 s`.
-      - *Aporte 3 (Modo fallo seguro):* Temporizador *Watchdog* (`5 s`) y *Aliviadero* (`2 s`) si la compuerta se atasca.
-    ], accent: true)
+    #section-label("Requerimientos del Sistema")
+    #set par(leading: 0.72em)
+    - *RF-01 (Telemetría):* Clasificar el caudal en 3 niveles y registrar historial secuencial (`seq`).
+    #v(0.22cm)
+    - *RF-02 (Control gradual):* Reducir al 50% en precaución y cerrar totalmente en emergencia.
+    #v(0.22cm)
+    - *RF-03 (Seguridad hídrica):* Garantizar siempre `volumen <= capacidad_maxima`.
+    #v(0.22cm)
+    - *RNF-01 (Verificación formal):* Cobertura 100% en Overture y propiedades CTL sin *deadlock* en UPPAAL.
   ]
 )
 
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 4: METODOLOGÍA Y ARTEFACTOS EMPLEADOS
+// DIAPOSITIVA 4: ARQUITECTURA Y DIAGRAMA DE CLASES (VDM++)
 // =====================================================================
-#slide-header("Metodología y Artefactos Empleados", subtitle: "PROCESO FORMAL EN TRES FASES Y HERRAMIENTAS DE VERIFICACIÓN")
+#slide-header("Arquitectura del Modelo Formal (VDM++)")
 
-#grid(
-  columns: (1fr, 1fr, 1fr),
-  gutter: 0.55cm,
-  [
-    #info-card("FASE 1 · ESPECIFICACIÓN (VDM++)", [
-      - *Herramienta:* Overture Tool v3.0.2 (estándar VDM-10).
-      - *Artefactos:* Invariantes de clase, pre/postcondiciones, bloques `atomic`, `Map`, `Set` y `Seq`.
-      - *Validación:* Suite automatizada `Test.vdmpp` con aserciones y reporte de cobertura.
-    ])
-  ],
-  [
-    #info-card("FASE 2 · MODEL CHECKING (UPPAAL)", [
-      - *Herramienta:* UPPAAL 5.0.0 (`verifyta.exe` y simulador concreto).
-      - *Artefactos:* Red de 4 autómatas temporizados con relojes continuos y canales `broadcast`.
-      - *Validación:* 7 propiedades CTL (seguridad, vivacidad, histéresis y ausencia de bloqueo).
-    ], accent: true)
-  ],
-  [
-    #info-card("FASE 3 · TOLERANCIA A FALLOS", [
-      - *Herramienta:* UPPAAL 5.0.0 (modelo independiente).
-      - *Artefactos:* Falla no determinista `Atascada`, reloj *Watchdog* (`5 s`) y quinto autómata `Aliviadero` (`2 s`).
-      - *Validación:* 6 propiedades CTL verificadas exhaustivamente.
-    ])
+#align(center)[
+  #image("fig/diagrama_clases_uml.svg", height: 9.3cm)
+]
+#v(0.12cm)
+#align(center)[
+  #text(size: 10.5pt, fill: black)[
+    *Estructuras integradas en `Controlador`:* `Map` (`sensores`, `compuertas`, `canales`), `Set` (`alarmas_activas` sin duplicados) y `Seq` (`historial_telemetria`).
   ]
-)
-
-#v(0.35cm)
-#block(
-  stroke: (left: 4pt + naranja-feria, top: 0.5pt + gris-borde, right: 0.5pt + gris-borde, bottom: 0.5pt + gris-borde),
-  inset: (x: 11pt, y: 7pt),
-  radius: (right: 3pt),
-  width: 100%,
-  [
-    #text(size: 9.8pt, fill: black)[
-      *Complementariedad:* *VDM++* garantiza que los datos y reglas de control nunca violen sus contratos; *UPPAAL* garantiza que el sistema responda a tiempo en todos los escenarios posibles de concurrencia.
-    ]
-  ]
-)
+]
 
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 5: ARTEFACTO DESARROLLADO 1 — VDM++ Y COBERTURA OVERTURE
+// DIAPOSITIVA 5: CÓDIGO CLAVE EN VDM++ (CONTRATOS Y CONTROL PREVENTIVO)
 // =====================================================================
-#slide-header("Artefacto Desarrollado: Especificación VDM++", subtitle: "5 CLASES FORMALES Y 100.0% DE COBERTURA EN OVERTURE TOOL v3.0.2")
+#slide-header("Especificación Formal en VDM++: Código Clave")
 
 #grid(
-  columns: (0.72fr, 1.38fr),
-  gutter: 0.55cm,
+  columns: (1.02fr, 0.98fr),
+  gutter: 0.7cm,
   align: (top, top),
   [
-    #info-card("ARQUITECTURA DE 5 CLASES", [
-      - *`Sensor`:* Clasifica el caudal en 3 niveles (`<NORMAL>`, `<PRECAUCION>`, `<CRITICO>`).
-      - *`Compuerta`:* Apertura al 100%, 50% o 0% bajo cambios atómicos.
-      - *`Canal`:* Garantiza `volumen <= capacidad_maxima`.
-      - *`Controlador`:* Gestiona mapas, alarmas activas (`Set`) e historial (`Seq`).
-      - *`Test`:* 6 escenarios; `EjecutarPruebas() = true` sin errores.
-    ])
+    #vdm-code("Sensor.vdmpp (Líneas 9–17) — Invariante de 3 niveles", 9, "public LecturaSensor ::
+    sensor_id : token
+    caudal    : Caudal
+    alerta    : NivelAlerta
+inv r ==
+    ((r.caudal <= 10.0) <=> (r.alerta = <NORMAL>)) and
+    ((r.caudal > 10.0 and r.caudal <= 15.0)
+      <=> (r.alerta = <PRECAUCION>)) and
+    ((r.caudal > 15.0) <=> (r.alerta = <CRITICO>));")
+    #v(0.28cm)
+    #vdm-code("Controlador.vdmpp (Líneas 9–17) — Invariantes de red", 9, "inv
+  (alarmas_activas subset dom sensores) and
+  (forall l in set elems historial_telemetria &
+      l.sensor_id in set dom sensores) and
+  (forall id in set dom sensores & (sensores(id)).id = id) and
+  (forall id in set dom compuertas & (compuertas(id)).id = id) and
+  (forall id in set dom canales & (canales(id)).id = id);")
   ],
   [
-    #fig-box(
-      "fig/cobertura_overture.png",
-      [Overture Tool v3.0.2: cobertura `100.0%` en `Canal` (10), `Compuerta` (16), `Controlador` (39), `Sensor` (18) y `Test` (30).],
-      max-height: 8.8cm
+    #vdm-code("Controlador.vdmpp (Líneas 45–68) — Control preventivo EvaluarRed()", 45, "public EvaluarRed: () ==> ()
+EvaluarRed() == (
+  for all sid in set dom sensores do (
+    dcl lectura := sensores(sid).GenerarLectura();
+    historial_telemetria := historial_telemetria ^ [lectura];
+    if lectura.alerta = <CRITICO> then (
+      alarmas_activas := alarmas_activas union {sid};
+      compuertas(sid).CerrarTotalmente();
+      if canales(sid).volumen_actual >= 5.0 then
+        canales(sid).DrenarAgua(5.0);
     )
+    elseif lectura.alerta = <PRECAUCION> then (
+      alarmas_activas := alarmas_activas \ {sid};
+      compuertas(sid).ConfigurarParcial(50);
+    )
+    else alarmas_activas := alarmas_activas \ {sid};
+  )
+);")
   ]
 )
 
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 6: ARTEFACTO DESARROLLADO 2 — AUTÓMATAS EN UPPAAL 5.0
+// DIAPOSITIVA 6: VALIDACIÓN VDM++ — COBERTURA 100% EN OVERTURE
 // =====================================================================
-#slide-header("Artefacto Desarrollado: Autómatas Temporizados", subtitle: "CIERRE FÍSICO GRADUAL, HISTÉRESIS Y SIMULACIÓN EN UPPAAL 5.0")
+#slide-header("Validación VDM++: Cobertura 100.0% en Overture v3.0.2")
+
+#align(center)[
+  #image("fig/cobertura_overture.png", height: 9.4cm)
+]
+#v(0.1cm)
+#align(center)[
+  #text(size: 10.5pt, fill: black)[
+    *Suite `Test.vdmpp` (6 escenarios):* `EjecutarPruebas() = true` · *100.0%* en `Canal` (10), `Compuerta` (16), `Controlador` (39), `Sensor` (18) y `Test` (30).
+  ]
+]
+
+#pagebreak()
+
+// =====================================================================
+// DIAPOSITIVA 7: AUTÓMATAS TEMPORIZADOS Y SIMULACIÓN EN UPPAAL 5.0
+// =====================================================================
+#slide-header("Verificación Temporal: Autómatas en UPPAAL 5.0")
 
 #grid(
   columns: (0.95fr, 1.15fr),
-  gutter: 0.55cm,
+  gutter: 0.65cm,
   align: (top, top),
   [
-    #fig-box(
+    #fig-clean(
       "fig/automata_compuerta.png",
-      [(a) `Compuerta`: permanece en `Cerrando` durante `T_CIERRE` antes de cerrar.],
-      max-height: 4.5cm
+      [(a) `Compuerta`: cierre físico en `Cerrando` (`T_CIERRE`).],
+      max-height: 4.3cm
     )
-    #v(0.18cm)
-    #fig-box(
+    #v(0.14cm)
+    #fig-clean(
       "fig/automata_sensor.png",
-      [(b) `Sensor`: dispara alerta en `>= 80 m³` y reabre recién en `<= 60 m³` (histéresis).],
-      max-height: 3.5cm
+      [(b) `Sensor`: histéresis (`>= 80` cierra, `<= 60` reabre).],
+      max-height: 3.3cm
     )
   ],
   [
-    #fig-box(
+    #fig-clean(
       "fig/simulacion_inicio_cierre.png",
-      [(c) Simulador concreto: en `volumen = 80`, `Sensor` alerta y `Controlador` ordena cerrar mientras el canal sigue llenándose.],
-      max-height: 8.3cm
+      [(c) Simulador concreto: en `volumen = 80` se ordena el cierre mientras el canal aún se llena.],
+      max-height: 8.0cm
     )
   ]
 )
@@ -320,46 +335,45 @@
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 7: RESULTADOS WCRT — VERDE VS CONTRAEJEMPLO ROJO
+// DIAPOSITIVA 8: RESULTADOS WCRT — CERTIFICACIÓN VS CONTRAEJEMPLO
 // =====================================================================
-#slide-header("Resultados WCRT: Certificación y Contraejemplo", subtitle: "FRONTERA TEMPORAL DEMOSTRADA EXHAUSTIVAMENTE EN UPPAAL 5.0")
+#slide-header("Resultados WCRT: Certificación Verde vs Contraejemplo")
 
 #grid(
-  columns: (0.88fr, 1.22fr),
-  gutter: 0.6cm,
+  columns: (0.85fr, 1.25fr),
+  gutter: 0.7cm,
   align: (top, top),
   [
-    #text(weight: "bold", fill: granate-unsa, size: 11pt)[Barrido de Tiempos de Cierre]
-    #v(0.12cm)
+    #section-label("Barrido en verifyta.exe")
     #table(
       columns: (auto, auto, 1fr),
-      inset: 5.5pt,
+      inset: 6pt,
       stroke: 0.6pt + gris-borde,
       fill: (x, y) => if y == 0 { granate-unsa } else { white },
-      [*#text(fill: white, size: 9.5pt)[$T_("CIERRE")$]*],
-      [*#text(fill: white, size: 9.5pt)[Pico]*],
-      [*#text(fill: white, size: 9.5pt)[`volumen <= 100`]*],
-      [#text(size: 9.5pt)[6 s (Nominal)]], [#text(size: 9.5pt)[95 $m^3$]], [#text(size: 9.5pt)[Conforme (7/7 CTL)]],
-      [#text(size: 9.5pt)[8 s (Límite)]], [#text(size: 9.5pt)[100 $m^3$]], [#text(size: 9.5pt)[Conforme (límite)]],
-      [#text(size: 9.5pt)[9 s]], [#text(size: 9.5pt)[105 $m^3$]], [#text(size: 9.5pt, fill: granate-unsa, weight: "bold")[Falla (desborde)]],
-      [#text(size: 9.5pt)[10 s (Contraej.)]], [#text(size: 9.5pt)[105 $m^3$]], [#text(size: 9.5pt, fill: granate-unsa, weight: "bold")[Falla en `Cerrando`]],
+      [*#text(fill: white, size: 10pt)[$T_("CIERRE")$]*],
+      [*#text(fill: white, size: 10pt)[Pico]*],
+      [*#text(fill: white, size: 10pt)[`volumen <= 100`]*],
+      [#text(size: 10pt)[6 s (Nominal)]], [#text(size: 10pt)[95 $m^3$]], [#text(size: 10pt)[Conforme (7/7 CTL)]],
+      [#text(size: 10pt)[8 s (Límite)]], [#text(size: 10pt)[100 $m^3$]], [#text(size: 10pt)[Conforme (límite)]],
+      [#text(size: 10pt)[9 s]], [#text(size: 10pt)[105 $m^3$]], [#text(size: 10pt, fill: granate-unsa, weight: "bold")[Falla (desborde)]],
+      [#text(size: 10pt)[10 s (Contraej.)]], [#text(size: 10pt)[105 $m^3$]], [#text(size: 10pt, fill: granate-unsa, weight: "bold")[Falla en `Cerrando`]],
     )
-    #v(0.25cm)
-    #info-card("HALLAZGO PRINCIPAL", [
-      Si la compuerta tarda `9 s` o más en bajar, el canal alcanza `105 m³` y desborda. La cota segura certificada es `T_CIERRE <= 8 s`.
-    ], accent: true)
+    #v(0.45cm)
+    #text(size: 12pt, fill: black)[
+      *Cota certificada:* el motor debe cerrar en *8 segundos o menos* para impedir desbordes (`105 > 100 m³`).
+    ]
   ],
   [
-    #fig-box(
+    #fig-clean(
       "fig/verificacion_propiedades.png",
-      [(a) Modelo nominal (`6 s`): 7/7 propiedades CTL satisfechas en verde.],
-      max-height: 3.2cm
+      [(a) Modelo nominal (`6 s`): 7/7 propiedades CTL en verde.],
+      max-height: 3.0cm
     )
-    #v(0.18cm)
-    #fig-box(
+    #v(0.16cm)
+    #fig-clean(
       "fig/contraejemplo_desborde.png",
-      [(b) Contraejemplo (`10 s`): violación en rojo de `A[] volumen <= MAX_CAPACIDAD`.],
-      max-height: 4.9cm
+      [(b) Contraejemplo (`10 s`): falla en rojo de `volumen <= MAX_CAPACIDAD`.],
+      max-height: 4.6cm
     )
   ]
 )
@@ -367,68 +381,31 @@
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 8: TOLERANCIA A FALLOS — ATASCO Y WATCHDOG
+// DIAPOSITIVA 9: TOLERANCIA A FALLOS — ATASCO Y WATCHDOG
 // =====================================================================
-#slide-header("Extensión Tolerante a Fallos: Atasco y Watchdog", subtitle: "RESPUESTA ANTE FALLA MECÁNICA DE LA COMPUERTA (PARTE 1)")
+#slide-header("Tolerancia a Fallos: Atasco y Watchdog")
 
-#text(size: 10.2pt)[
-  Para cubrir obstrucciones por sedimentos, se agregó la falla no determinista `Atascada` en `Compuerta` y un temporizador de vigilancia (*Watchdog* de `5 s`) en `Controlador`.
-]
-#v(0.2cm)
-
-#grid(
-  columns: (0.95fr, 1.15fr),
-  gutter: 0.6cm,
-  align: (center + top, center + top),
-  [
-    #fig-box(
-      "fig/automata_compuerta_fallos.png",
-      [(a) `Compuerta`: si falla durante `Cerrando`, pasa al estado `Atascada`.],
-      max-height: 7.4cm
-    )
-  ],
-  [
-    #fig-box(
-      "fig/automata_controlador_fallos.png",
-      [(b) `Controlador`: si expira `t_wd == 5 s` sin confirmación, activa el aliviadero y entra en `ModoFalloSeguro`.],
-      max-height: 7.4cm
-    )
-  ]
-)
-
-#pagebreak()
-
-// =====================================================================
-// DIAPOSITIVA 9: TOLERANCIA A FALLOS — ALIVIADERO Y VERIFICACIÓN CTL
-// =====================================================================
-#slide-header("Extensión Tolerante a Fallos: Aliviadero y CTL", subtitle: "CERTIFICACIÓN DE SEGURIDAD ANTE ATASCO (PARTE 2)")
-
-#text(size: 10.2pt)[
-  Al expirar el *Watchdog*, el quinto autómata `Aliviadero` abre en `2 s` y desvía el caudal excedente. Las *6 propiedades CTL* se verificaron en verde sin bloqueos.
+#text(size: 11.5pt)[
+  Ante obstrucciones por sedimentos, `Compuerta` puede pasar a `Atascada` y `Controlador` vigila el cierre con un *Watchdog* de `5 s`.
 ]
 #v(0.25cm)
 
 #grid(
-  columns: (1fr, 1.05fr),
+  columns: (0.95fr, 1.15fr),
   gutter: 0.65cm,
-  align: (center + horizon, center + top),
+  align: (center + top, center + top),
   [
-    #align(center)[
-      #box(
-        stroke: 0.5pt + gris-borde,
-        inset: 4pt,
-        radius: 2pt,
-        image("fig/automata_aliviadero.png", width: 100%)
-      ) \
-      #v(-0.1cm)
-      #text(size: 8.4pt, fill: black)[(a) Quinto autómata `Aliviadero`: abre en `2 s` y emite `alivio_activo!`.]
-    ]
+    #fig-clean(
+      "fig/automata_compuerta_fallos.png",
+      [(a) `Compuerta` con fallo no determinista `Atascada`.],
+      max-height: 7.0cm
+    )
   ],
   [
-    #fig-box(
-      "fig/verificacion_tolerante_fallos.png",
-      [(b) Verifier UPPAAL 5.0: 6/6 propiedades CTL en verde (`not deadlock`, `volumen <= 100` y coherencia de fallo seguro).],
-      max-height: 7.1cm
+    #fig-clean(
+      "fig/automata_controlador_fallos.png",
+      [(b) `Controlador` con *Watchdog* (`t_wd <= 5`) y `ModoFalloSeguro`.],
+      max-height: 7.0cm
     )
   ]
 )
@@ -436,36 +413,65 @@
 #pagebreak()
 
 // =====================================================================
-// DIAPOSITIVA 10: CIERRE Y GRACIAS (PLANTILLA OFICIAL FERIA 2026)
+// DIAPOSITIVA 10: TOLERANCIA A FALLOS — ALIVIADERO Y VERIFICACIÓN CTL
 // =====================================================================
+#slide-header("Tolerancia a Fallos: Aliviadero y Verificación CTL")
+
+#text(size: 11.5pt)[
+  Al expirar el *Watchdog*, el quinto autómata `Aliviadero` abre en `2 s` y contiene el caudal (`6/6` propiedades CTL en verde).
+]
 #v(0.3cm)
-#text(size: 38pt, weight: "bold", fill: black)[Gracias...]
-#v(0.35cm)
 
 #grid(
-  columns: (1.25fr, 0.95fr),
-  gutter: 0.8cm,
+  columns: (1fr, 1.05fr),
+  gutter: 0.7cm,
+  align: (center + horizon, center + top),
   [
-    #info-card("CONCLUSIONES VERIFICADAS", [
-      - *VDM++ (Overture v3.0.2):* 5 clases con control preventivo gradual y *100.0% de cobertura*.
-      - *UPPAAL 5.0 (WCRT):* Contraejemplo demostrado en `>= 9 s` y seguridad certificada en `<= 8 s` (7/7 CTL).
-      - *Tolerancia a fallos:* *Watchdog* (`5 s`) + `Aliviadero` (`2 s`) garantizan contención aun con compuerta atascada (6/6 CTL).
-    ])
+    #align(center)[
+      #image("fig/automata_aliviadero.png", width: 100%) \
+      #v(-0.08cm)
+      #text(size: 8.8pt, fill: black)[(a) Quinto autómata `Aliviadero` (`T_ALIVIO = 2 s`).]
+    ]
   ],
   [
-    #block(
-      stroke: (left: 4pt + granate-unsa),
-      inset: (left: 14pt, y: 10pt),
-      [
-        #text(size: 13pt, style: "italic", fill: black)[
-          “Las pruebas pueden mostrar la presencia de errores, pero solo la verificación formal demuestra seguridad antes de que el agua desborde.”
-        ]
-        #v(0.35cm)
-        #text(size: 9pt, fill: gris-texto)[
-          *Repositorio GitHub:* \
-          `github.com/DenilsonCB/verificacion-formal-compuertas-agricolas-vdmpp-uppaal`
-        ]
-      ]
+    #fig-clean(
+      "fig/verificacion_tolerante_fallos.png",
+      [(b) Verifier UPPAAL 5.0: 6/6 fórmulas CTL satisfechas sin bloqueos.],
+      max-height: 7.6cm
     )
+  ]
+)
+
+#pagebreak()
+
+// =====================================================================
+// DIAPOSITIVA 11: CIERRE Y GRACIAS (PLANTILLA OFICIAL FERIA)
+// =====================================================================
+#v(0.45cm)
+#text(size: 40pt, weight: "bold", fill: black)[Gracias...]
+#v(0.55cm)
+
+#grid(
+  columns: (1.2fr, 1fr),
+  gutter: 1.2cm,
+  [
+    #section-label("Conclusiones Principales")
+    #set par(leading: 0.75em)
+    - *VDM++ (Overture v3.0.2):* 5 clases con control preventivo gradual y *100.0% de cobertura*.
+    #v(0.25cm)
+    - *UPPAAL 5.0 (WCRT):* Contraejemplo en `>= 9 s` y seguridad certificada en `<= 8 s` (7/7 CTL).
+    #v(0.25cm)
+    - *Tolerancia a fallos:* *Watchdog* (`5 s`) + `Aliviadero` (`2 s`) garantizan contención ante atasco (6/6 CTL).
+  ],
+  [
+    #v(0.2cm)
+    #text(size: 14pt, style: "italic", fill: black)[
+      “Las pruebas pueden mostrar la presencia de errores, pero solo la verificación formal demuestra seguridad antes de que el agua desborde.”
+    ]
+    #v(0.6cm)
+    #text(size: 9.8pt, fill: gris-texto)[
+      *Repositorio GitHub:* \
+      `github.com/DenilsonCB/verificacion-formal-compuertas-agricolas-vdmpp-uppaal`
+    ]
   ]
 )
