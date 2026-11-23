@@ -471,7 +471,7 @@ EvaluarRed() == (
     #v(0.6cm)
     #text(size: 9.8pt, fill: gris-texto)[
       *Repositorio GitHub:* \
-      `github.com/DenilsonCB/verificacion-formal-compuertas-agricolas-vdmpp-uppaal`
+      #link("https://github.com/DenilsonCB/verificacion-formal-compuertas-agricolas-vdmpp-uppaal")[#text(fill: rgb("#0d5caf"))[`https://github.com/DenilsonCB/verificacion-formal-compuertas-agricolas-vdmpp-uppaal`]]
     ]
   ]
 )
