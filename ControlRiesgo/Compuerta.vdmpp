@@ -1,0 +1,50 @@
+class Compuerta
+types
+    public EstadoCompuerta = <ABIERTA> | <CERRADA> | <PARCIAL>;
+    public Porcentaje = nat
+    inv p == p <= 100;
+
+instance variables
+    public id : token;
+    public estado_actual : EstadoCompuerta;
+    public porcentaje_apertura : Porcentaje;
+
+    -- Invariante de clase: Coherencia entre el estado enumerado y el porcentaje fisico
+    inv (estado_actual = <CERRADA> <=> porcentaje_apertura = 0) and
+        (estado_actual = <ABIERTA> <=> porcentaje_apertura = 100);
+
+operations
+    public Compuerta: token ==> Compuerta
+    Compuerta(c_id) == (
+        id := c_id;
+        estado_actual := <CERRADA>;
+        porcentaje_apertura := 0;
+    );
+
+    public ObtenerId: () ==> token
+    ObtenerId() == return id;
+
+    public AbrirTotalmente: () ==> ()
+    AbrirTotalmente() == atomic (
+        estado_actual := <ABIERTA>;
+        porcentaje_apertura := 100;
+    );
+
+    public CerrarTotalmente: () ==> ()
+    CerrarTotalmente() == atomic (
+        estado_actual := <CERRADA>;
+        porcentaje_apertura := 0;
+    );
+
+    public ConfigurarParcial: Porcentaje ==> ()
+    ConfigurarParcial(p) == atomic (
+        estado_actual := <PARCIAL>;
+        porcentaje_apertura := p;
+    )
+    pre p > 0 and p < 100;
+
+    public ObtenerEstado: () ==> EstadoCompuerta
+    ObtenerEstado() == return estado_actual;
+
+end Compuerta
+
