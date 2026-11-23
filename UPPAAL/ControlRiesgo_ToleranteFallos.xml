@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>
+// Capa 2 (Bonus): Modelo Tolerante a Fallos (Atasco mecanico + Watchdog + Aliviadero)
+int[0, 150] volumen = 50;
+const int MAX_CAPACIDAD = 100;
+const int NIVEL_PELIGRO = 80;
+const int NIVEL_SEGURO = 60;
+const int T_CIERRE = 4;
+const int T_APERTURA = 2;
+const int T_WATCHDOG = 5;
+const int T_ALIVIO = 2;
+
+// Canales de Sincronizacion
+broadcast chan alerta_peligro, alerta_segura;
+broadcast chan abrir_compuerta, cerrar_compuerta;
+broadcast chan compuerta_cerrada, compuerta_abierta;
+broadcast chan activar_aliviadero, alivio_activo;
+	</declaration>
+	<template>
+		<name x="5" y="5">MedioAmbiente</name>
+		<declaration>
+clock t_env;
+		</declaration>
+		<location id="id0" x="-160" y="0">
+			<name x="-190" y="-38">Llenando</name>
+			<label kind="invariant" x="-195" y="25">t_env &lt;= 2</label>
+		</location>
+		<location id="id1" x="160" y="0">
+			<name x="128" y="-38">Drenando</name>
+			<label kind="invariant" x="128" y="25">t_env &lt;= 2</label>
+		</location>
+		<init ref="id0"/>
+		<transition id="id2">
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-415" y="-35">t_env == 2</label>
+			<label kind="assignment" x="-445" y="-10">volumen = (volumen &lt;= 145 ? volumen + 5 : 150),
+t_env = 0</label>
+			<nail x="-220" y="-55"/>
+			<nail x="-220" y="55"/>
+		</transition>
+		<transition id="id3">
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="guard" x="235" y="-35">t_env == 2 &amp;&amp;
+volumen &gt;= 5</label>
+			<label kind="assignment" x="235" y="5">volumen = volumen - 5,
+t_env = 0</label>
+			<nail x="220" y="-55"/>
+			<nail x="220" y="55"/>
+		</transition>
+		<transition id="id4">
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="guard" x="105" y="102">t_env == 2 &amp;&amp;
+volumen &lt; 5</label>
+			<label kind="assignment" x="125" y="138">t_env = 0</label>
+			<nail x="125" y="90"/>
+			<nail x="195" y="90"/>
+		</transition>
+		<transition id="id5">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-65" y="-65">compuerta_cerrada?</label>
+			<nail x="0" y="-40"/>
+		</transition>
+		<transition id="id6">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-50" y="-110">alivio_activo?</label>
+			<nail x="0" y="-88"/>
+		</transition>
+		<transition id="id7">
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-65" y="45">compuerta_abierta?</label>
+			<nail x="0" y="40"/>
+		</transition>
+	</template>
+	<template>
+		<name>Sensor</name>
+		<declaration>
+clock t_s;
+		</declaration>
+		<location id="id8" x="-190" y="-50">
+			<name x="-215" y="-88">Normal</name>
+			<label kind="invariant" x="-215" y="-25">t_s &lt;= 1</label>
+		</location>
+		<location id="id9" x="150" y="-50">
+			<name x="125" y="-88">Critico</name>
+			<label kind="invariant" x="125" y="-25">t_s &lt;= 1</label>
+		</location>
+		<init ref="id8"/>
+		<transition id="id10">
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-440" y="-80">t_s == 1 &amp;&amp;
+volumen &lt; NIVEL_PELIGRO</label>
+			<label kind="assignment" x="-330" y="-35">t_s = 0</label>
+			<nail x="-245" y="-105"/>
+			<nail x="-245" y="5"/>
+		</transition>
+		<transition id="id11">
+			<source ref="id9"/>
+			<target ref="id9"/>
+			<label kind="guard" x="215" y="-80">t_s == 1 &amp;&amp;
+volumen &gt; NIVEL_SEGURO</label>
+			<label kind="assignment" x="215" y="-35">t_s = 0</label>
+			<nail x="205" y="-105"/>
+			<nail x="205" y="5"/>
+		</transition>
+		<transition id="id12">
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-110" y="-145">t_s == 1 &amp;&amp;
+volumen &gt;= NIVEL_PELIGRO</label>
+			<label kind="synchronisation" x="-85" y="-105">alerta_peligro!</label>
+			<label kind="assignment" x="-45" y="-82">t_s = 0</label>
+			<nail x="-20" y="-95"/>
+		</transition>
+		<transition id="id13">
+			<source ref="id9"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-105" y="25">t_s == 1 &amp;&amp;
+volumen &lt;= NIVEL_SEGURO</label>
+			<label kind="synchronisation" x="-80" y="65">alerta_segura!</label>
+			<label kind="assignment" x="-45" y="88">t_s = 0</label>
+			<nail x="-20" y="15"/>
+		</transition>
+	</template>
+	<template>
+		<name>Controlador</name>
+		<declaration>
+clock t_wd;
+		</declaration>
+		<location id="id14" x="-240" y="0">
+			<name x="-295" y="-42">Monitoreando</name>
+		</location>
+		<location id="id15" x="-90" y="0">
+			<name x="-155" y="-42">ProcesandoPeligro</name>
+			<committed/>
+		</location>
+		<location id="id16" x="70" y="0">
+			<name x="15" y="-42">EsperandoCierre</name>
+			<label kind="invariant" x="15" y="20">t_wd &lt;= T_WATCHDOG</label>
+		</location>
+		<location id="id17" x="230" y="0">
+			<name x="192" y="-42">Emergencia</name>
+		</location>
+		<location id="id18" x="-40" y="110">
+			<name x="-100" y="128">ProcesandoSeguro</name>
+			<committed/>
+		</location>
+		<location id="id19" x="70" y="-120">
+			<name x="15" y="-158">ActivandoAlivio</name>
+			<committed/>
+		</location>
+		<location id="id20" x="230" y="-120">
+			<name x="175" y="-158">ModoFalloSeguro</name>
+		</location>
+		<init ref="id14"/>
+		<transition id="id21">
+			<source ref="id14"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="-205" y="-25">alerta_peligro?</label>
+		</transition>
+		<transition id="id22">
+			<source ref="id15"/>
+			<target ref="id16"/>
+			<label kind="synchronisation" x="-50" y="-25">cerrar_compuerta!</label>
+			<label kind="assignment" x="-30" y="6">t_wd = 0</label>
+		</transition>
+		<transition id="id23">
+			<source ref="id16"/>
+			<target ref="id17"/>
+			<label kind="synchronisation" x="95" y="-25">compuerta_cerrada?</label>
+		</transition>
+		<transition id="id24">
+			<source ref="id17"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="80" y="82">alerta_segura?</label>
+			<nail x="230" y="110"/>
+		</transition>
+		<transition id="id25">
+			<source ref="id18"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-190" y="82">abrir_compuerta!</label>
+			<nail x="-240" y="110"/>
+		</transition>
+		<transition id="id26">
+			<source ref="id16"/>
+			<target ref="id19"/>
+			<label kind="guard" x="-25" y="-75">t_wd == T_WATCHDOG</label>
+		</transition>
+		<transition id="id27">
+			<source ref="id19"/>
+			<target ref="id20"/>
+			<label kind="synchronisation" x="95" y="-142">activar_aliviadero!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Compuerta</name>
+		<declaration>
+clock t_act;
+		</declaration>
+		<location id="id28" x="-180" y="0">
+			<name x="-245" y="-12">Abierta</name>
+		</location>
+		<location id="id29" x="0" y="-95">
+			<name x="-32" y="-135">Cerrando</name>
+			<label kind="invariant" x="-48" y="-75">t_act &lt;= T_CIERRE</label>
+		</location>
+		<location id="id30" x="180" y="0">
+			<name x="198" y="-12">Cerrada</name>
+		</location>
+		<location id="id31" x="0" y="95">
+			<name x="-32" y="115">Abriendo</name>
+			<label kind="invariant" x="-55" y="55">t_act &lt;= T_APERTURA</label>
+		</location>
+		<location id="id32" x="0" y="-210">
+			<name x="-32" y="-248">Atascada</name>
+		</location>
+		<init ref="id28"/>
+		<transition id="id33">
+			<source ref="id28"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-185" y="-75">cerrar_compuerta?</label>
+			<label kind="assignment" x="-145" y="-55">t_act = 0</label>
+		</transition>
+		<transition id="id34">
+			<source ref="id29"/>
+			<target ref="id30"/>
+			<label kind="guard" x="55" y="-82">t_act == T_CIERRE</label>
+			<label kind="synchronisation" x="55" y="-62">compuerta_cerrada!</label>
+		</transition>
+		<transition id="id35">
+			<source ref="id29"/>
+			<target ref="id32"/>
+			<label kind="guard" x="12" y="-165">t_act == T_CIERRE</label>
+		</transition>
+		<transition id="id36">
+			<source ref="id30"/>
+			<target ref="id31"/>
+			<label kind="synchronisation" x="60" y="52">abrir_compuerta?</label>
+			<label kind="assignment" x="75" y="72">t_act = 0</label>
+		</transition>
+		<transition id="id37">
+			<source ref="id31"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-185" y="45">t_act == T_APERTURA</label>
+			<label kind="synchronisation" x="-185" y="65">compuerta_abierta!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Aliviadero</name>
+		<declaration>
+clock t_aliv;
+		</declaration>
+		<location id="id38" x="-160" y="0">
+			<name x="-190" y="-38">Cerrado</name>
+		</location>
+		<location id="id39" x="0" y="0">
+			<name x="-32" y="-38">Abriendo</name>
+			<label kind="invariant" x="-45" y="25">t_aliv &lt;= T_ALIVIO</label>
+		</location>
+		<location id="id40" x="160" y="0">
+			<name x="135" y="-38">Abierto</name>
+		</location>
+		<init ref="id38"/>
+		<transition id="id41">
+			<source ref="id38"/>
+			<target ref="id39"/>
+			<label kind="synchronisation" x="-140" y="-25">activar_aliviadero?</label>
+			<label kind="assignment" x="-110" y="6">t_aliv = 0</label>
+		</transition>
+		<transition id="id42">
+			<source ref="id39"/>
+			<target ref="id40"/>
+			<label kind="guard" x="35" y="-25">t_aliv == T_ALIVIO</label>
+			<label kind="synchronisation" x="35" y="6">alivio_activo!</label>
+		</transition>
+	</template>
+	<system>
+system MedioAmbiente, Sensor, Controlador, Compuerta, Aliviadero;
+	</system>
+	<queries>
+		<query>
+			<formula>A[] not deadlock</formula>
+			<comment>P1 (Deadlock-freedom): Sin bloqueos tanto en operacion normal como en ModoFalloSeguro.</comment>
+		</query>
+		<query>
+			<formula>A[] volumen &lt;= MAX_CAPACIDAD</formula>
+			<comment>P2 (Safety Fail-Safe): Incluso si la compuerta principal se atasca, el aliviadero frena el desborde (&lt;= 100).</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; Compuerta.Atascada</formula>
+			<comment>P3 (Reachability de falla): El estado de atasco mecanico es alcanzable.</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; Aliviadero.Abierto</formula>
+			<comment>P4 (Reachability de contingencia): El aliviadero lateral de emergencia es activado por el Watchdog.</comment>
+		</query>
+		<query>
+			<formula>Sensor.Critico --&gt; (Compuerta.Cerrada or Aliviadero.Abierto)</formula>
+			<comment>P5 (Liveness Tolerante a Fallos): Ante nivel critico, o bien cierra la compuerta o bien se abre el aliviadero.</comment>
+		</query>
+		<query>
+			<formula>A[] (Controlador.ModoFalloSeguro imply Compuerta.Atascada)</formula>
+			<comment>P6 (Integridad de modo seguro): El modo de mantenimiento seguro solo se activa ante atasco real de la compuerta.</comment>
+		</query>
+	</queries>
+</nta>
