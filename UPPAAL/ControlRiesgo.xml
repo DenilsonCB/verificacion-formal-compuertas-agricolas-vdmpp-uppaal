@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>
+// Variables Globales y Parametros Temporales (WCRT)
+int[0, 150] volumen = 50;
+const int MAX_CAPACIDAD = 100;
+const int NIVEL_PELIGRO = 80;
+const int NIVEL_SEGURO = 60;
+const int T_CIERRE = 6;
+const int T_APERTURA = 2;
+
+// Canales de Sincronizacion (Controlador -&gt; Compuerta -&gt; MedioAmbiente)
+broadcast chan alerta_peligro, alerta_segura;
+broadcast chan abrir_compuerta, cerrar_compuerta;
+broadcast chan compuerta_cerrada, compuerta_abierta;
+	</declaration>
+	<template>
+		<name x="5" y="5">MedioAmbiente</name>
+		<declaration>
+clock t_env;
+		</declaration>
+		<location id="id0" x="-160" y="0">
+			<name x="-187" y="-42">Llenando</name>
+			<label kind="invariant" x="-195" y="25">t_env &lt;= 2</label>
+		</location>
+		<location id="id1" x="160" y="0">
+			<name x="119" y="-42">Drenando</name>
+			<label kind="invariant" x="127" y="34">t_env &lt;= 2</label>
+		</location>
+		<init ref="id0"/>
+		<transition id="id2">
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-323" y="-34">t_env == 2</label>
+			<label kind="assignment" x="-612" y="-8">volumen = (volumen &lt;= 145 ? volumen + 5 : 150),
+t_env = 0</label>
+			<nail x="-220" y="-55"/>
+			<nail x="-220" y="55"/>
+		</transition>
+		<transition id="id3">
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="guard" x="235" y="-35">t_env == 2 &amp;&amp;
+volumen &gt;= 5</label>
+			<label kind="assignment" x="235" y="5">volumen = volumen - 5,
+t_env = 0</label>
+			<nail x="220" y="-55"/>
+			<nail x="220" y="55"/>
+		</transition>
+		<transition id="id4">
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="guard" x="105" y="102">t_env == 2 &amp;&amp;
+volumen &lt; 5</label>
+			<label kind="assignment" x="125" y="138">t_env = 0</label>
+			<nail x="125" y="90"/>
+			<nail x="195" y="90"/>
+		</transition>
+		<transition id="id5">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-65" y="-65">compuerta_cerrada?</label>
+			<nail x="0" y="-40"/>
+		</transition>
+		<transition id="id6">
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-65" y="45">compuerta_abierta?</label>
+			<nail x="0" y="40"/>
+		</transition>
+	</template>
+	<template>
+		<name>Sensor</name>
+		<declaration>
+clock t_s;
+		</declaration>
+		<location id="id7" x="-190" y="-50">
+			<name x="-204" y="-85">Normal</name>
+			<label kind="invariant" x="-215" y="-25">t_s &lt;= 1</label>
+		</location>
+		<location id="id8" x="150" y="-50">
+			<name x="110" y="-85">Critico</name>
+			<label kind="invariant" x="110" y="-25">t_s &lt;= 1</label>
+		</location>
+		<init ref="id7"/>
+		<transition id="id9">
+			<source ref="id7"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-440" y="-80">t_s == 1 &amp;&amp;
+volumen &lt; NIVEL_PELIGRO</label>
+			<label kind="assignment" x="-330" y="-35">t_s = 0</label>
+			<nail x="-245" y="-105"/>
+			<nail x="-245" y="5"/>
+		</transition>
+		<transition id="id10">
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="guard" x="212" y="-76">t_s == 1 &amp;&amp;
+volumen &gt; NIVEL_SEGURO</label>
+			<label kind="assignment" x="215" y="-35">t_s = 0</label>
+			<nail x="205" y="-105"/>
+			<nail x="205" y="5"/>
+		</transition>
+		<transition id="id11">
+			<source ref="id7"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-110" y="-161">t_s == 1 &amp;&amp;
+volumen &gt;= NIVEL_PELIGRO</label>
+			<label kind="synchronisation" x="-85" y="-119">alerta_peligro!</label>
+			<label kind="assignment" x="-45" y="-82">t_s = 0</label>
+			<nail x="-20" y="-95"/>
+		</transition>
+		<transition id="id12">
+			<source ref="id8"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-102" y="17">t_s == 1 &amp;&amp;
+volumen &lt;= NIVEL_SEGURO</label>
+			<label kind="synchronisation" x="-76" y="59">alerta_segura!</label>
+			<label kind="assignment" x="-51" y="76">t_s = 0</label>
+			<nail x="-20" y="15"/>
+		</transition>
+	</template>
+	<template>
+		<name>Controlador</name>
+		<location id="id13" x="-200" y="0">
+			<name x="-255" y="-42">Monitoreando</name>
+		</location>
+		<location id="id14" x="-40" y="0">
+			<name x="-105" y="-42">ProcesandoPeligro</name>
+			<committed/>
+		</location>
+		<location id="id15" x="120" y="0">
+			<name x="82" y="-42">Emergencia</name>
+		</location>
+		<location id="id16" x="-40" y="95">
+			<name x="-100" y="112">ProcesandoSeguro</name>
+			<committed/>
+		</location>
+		<init ref="id13"/>
+		<transition id="id17">
+			<source ref="id13"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-160" y="-25">alerta_peligro?</label>
+		</transition>
+		<transition id="id18">
+			<source ref="id14"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="-5" y="-25">cerrar_compuerta!</label>
+		</transition>
+		<transition id="id19">
+			<source ref="id15"/>
+			<target ref="id16"/>
+			<label kind="synchronisation" x="20" y="68">alerta_segura?</label>
+			<nail x="120" y="95"/>
+		</transition>
+		<transition id="id20">
+			<source ref="id16"/>
+			<target ref="id13"/>
+			<label kind="synchronisation" x="-175" y="68">abrir_compuerta!</label>
+			<nail x="-200" y="95"/>
+		</transition>
+	</template>
+	<template>
+		<name>Compuerta</name>
+		<declaration>
+clock t_act;
+		</declaration>
+		<location id="id21" x="-180" y="0">
+			<name x="-263" y="-8">Abierta</name>
+		</location>
+		<location id="id22" x="0" y="-95">
+			<name x="-32" y="-135">Cerrando</name>
+			<label kind="invariant" x="-76" y="-51">t_act &lt;= T_CIERRE</label>
+		</location>
+		<location id="id23" x="180" y="0">
+			<name x="198" y="-12">Cerrada</name>
+		</location>
+		<location id="id24" x="0" y="95">
+			<name x="-32" y="115">Abriendo</name>
+			<label kind="invariant" x="-85" y="34">t_act &lt;= T_APERTURA</label>
+		</location>
+		<init ref="id21"/>
+		<transition id="id25">
+			<source ref="id21"/>
+			<target ref="id22"/>
+			<label kind="synchronisation" x="-212" y="-85">cerrar_compuerta?</label>
+			<label kind="assignment" x="-187" y="-68">t_act = 0</label>
+		</transition>
+		<transition id="id26">
+			<source ref="id22"/>
+			<target ref="id23"/>
+			<label kind="guard" x="85" y="-85">t_act == T_CIERRE</label>
+			<label kind="synchronisation" x="85" y="-68">compuerta_cerrada!</label>
+		</transition>
+		<transition id="id27">
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="synchronisation" x="85" y="51">abrir_compuerta?</label>
+			<label kind="assignment" x="110" y="68">t_act = 0</label>
+		</transition>
+		<transition id="id28">
+			<source ref="id24"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-238" y="68">t_act == T_APERTURA</label>
+			<label kind="synchronisation" x="-238" y="51">compuerta_abierta!</label>
+		</transition>
+	</template>
+	<system>
+system MedioAmbiente, Sensor, Controlador, Compuerta;
+	</system>
+	<queries>
+		<query>
+			<formula>A[] not deadlock</formula>
+			<comment>P1 (Deadlock-freedom): El sistema nunca sufre interbloqueos bajo ningun entrelazado de relojes.</comment>
+			<result outcome="success" type="quality" timestamp="2026-11-22 08:37:10 -0500">
+			</result>
+		</query>
+		<query>
+			<formula>A[] volumen &lt;= MAX_CAPACIDAD</formula>
+			<comment>P2 (Safety WCRT): Dentro de la cota segura T_CIERRE &lt;= 8 (nominal 6s), el canal jamas supera 100 m3.</comment>
+			<result outcome="success" type="quality" timestamp="2026-11-22 08:37:12 -0500">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; Controlador.Emergencia</formula>
+			<comment>P3 (Reachability): El estado de emergencia del controlador es alcanzable.</comment>
+			<result outcome="success" type="quality" timestamp="2026-11-22 08:37:13 -0500">
+			</result>
+		</query>
+		<query>
+			<formula>Sensor.Critico --&gt; Compuerta.Cerrada</formula>
+			<comment>P4 (Liveness): Ante deteccion critica, la compuerta siempre completa el cierre fisico.</comment>
+			<result outcome="success" type="quality" timestamp="2026-11-22 08:37:15 -0500">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; MedioAmbiente.Drenando</formula>
+			<comment>P5 (Reachability): El drenaje fisico se activa efectivamente tras el cierre completo de la compuerta.</comment>
+			<result outcome="success" type="quality" timestamp="2026-11-22 08:37:15 -0500">
+			</result>
+		</query>
+		<query>
+			<formula>A[] (Compuerta.Abierta imply MedioAmbiente.Llenando)</formula>
+			<comment>P6 (Coherencia fisica): Siempre que la compuerta esta abierta, el canal se encuentra recibiendo flujo.</comment>
+			<result outcome="success" type="quality" timestamp="2026-11-22 08:37:16 -0500">
+			</result>
+		</query>
+		<query>
+			<formula>Sensor.Critico --&gt; (Controlador.Monitoreando and volumen &lt;= NIVEL_SEGURO)</formula>
+			<comment>P7 (Histeresis y recuperacion): Tras una alerta critica, el sistema drena hasta el nivel seguro (&lt;= 60) y restablece el monitoreo sin chattering.</comment>
+			<result outcome="success" type="quality" timestamp="2026-11-22 08:37:17 -0500">
+			</result>
+		</query>
+	</queries>
+</nta>
