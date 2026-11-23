@@ -1,0 +1,97 @@
+class Controlador
+instance variables
+    public sensores : map token to Sensor;
+    public compuertas : map token to Compuerta;
+    public canales : map token to Canal;
+    public alarmas_activas : set of token;
+    public historial_telemetria : seq of Sensor`LecturaSensor;
+
+inv
+    -- 1. Consistencia referencial: toda alarma e historial deben provenir de sensores registrados
+    (alarmas_activas subset dom sensores) and
+    (forall l in set elems historial_telemetria & l.sensor_id in set dom sensores) and
+
+    -- 2. Coherencia de mapeo usando acceso directo a atributos (.id)
+    (forall id in set dom sensores & (sensores(id)).id = id) and
+    (forall id in set dom compuertas & (compuertas(id)).id = id) and
+    (forall id in set dom canales & (canales(id)).id = id);
+
+operations
+    public Controlador: () ==> Controlador
+    Controlador() == (
+        sensores := {|->};
+        compuertas := {|->};
+        canales := {|->};
+        alarmas_activas := {};
+        historial_telemetria := [];
+    );
+
+    public RegistrarSensor: Sensor ==> ()
+    RegistrarSensor(s) ==
+        sensores := sensores ++ {s.ObtenerId() |-> s}
+    pre s.id not in set dom sensores;
+
+    public RegistrarCompuerta: Compuerta ==> ()
+    RegistrarCompuerta(c) ==
+        compuertas := compuertas ++ {c.ObtenerId() |-> c}
+    pre c.id not in set dom compuertas;
+
+    public RegistrarCanal: Canal ==> ()
+    RegistrarCanal(cn) ==
+        canales := canales ++ {cn.ObtenerId() |-> cn}
+    pre cn.id not in set dom canales;
+
+    -- Evalua todos los sensores, registra auditoria cronologica y actua por niveles
+    public EvaluarRed: () ==> ()
+    EvaluarRed() == (
+        for all sid in set dom sensores do (
+            dcl lectura : Sensor`LecturaSensor := sensores(sid).GenerarLectura();
+            historial_telemetria := historial_telemetria ^ [lectura];
+
+            if lectura.alerta = <CRITICO> then (
+                alarmas_activas := alarmas_activas union {sid};
+                if sid in set dom compuertas then (
+                    compuertas(sid).CerrarTotalmente();
+                );
+                if sid in set dom canales and canales(sid).volumen_actual >= 5.0 then (
+                    canales(sid).DrenarAgua(5.0);
+                )
+            )
+            elseif lectura.alerta = <PRECAUCION> then (
+                alarmas_activas := alarmas_activas \ {sid};
+                if sid in set dom compuertas then (
+                    compuertas(sid).ConfigurarParcial(50);
+                )
+            )
+            else (
+                alarmas_activas := alarmas_activas \ {sid};
+            )
+        )
+    );
+
+    -- Intento de apertura manual supervisado con balance hidrico real en Canal
+    public SolicitarApertura: token * Compuerta`Porcentaje * Canal`Volumen ==> bool
+    SolicitarApertura(cid, p, caudal_proyectado) == (
+        if (cid in set alarmas_activas) then return false
+        else if (cid in set dom canales and canales(cid).AdmiteFlujo(caudal_proyectado)) then (
+            if p = 100 then compuertas(cid).AbrirTotalmente()
+            else compuertas(cid).ConfigurarParcial(p);
+            canales(cid).InyectarAgua(caudal_proyectado);
+            return true;
+        )
+        else return false;
+    )
+    pre cid in set dom compuertas and p > 0;
+
+    -- Alivio o drenaje controlado de un tramo supervisado
+    public AliviarCanal: token * Canal`Volumen ==> bool
+    AliviarCanal(cid, vol_drenaje) == (
+        if (canales(cid).volumen_actual >= vol_drenaje) then (
+            canales(cid).DrenarAgua(vol_drenaje);
+            return true;
+        )
+        else return false;
+    )
+    pre cid in set dom canales and vol_drenaje > 0.0;
+
+end Controlador
