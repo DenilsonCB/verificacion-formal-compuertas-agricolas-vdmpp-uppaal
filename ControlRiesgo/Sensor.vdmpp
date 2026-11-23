@@ -1,0 +1,48 @@
+class Sensor
+types
+    public NivelAlerta = <NORMAL> | <PRECAUCION> | <CRITICO>;
+    
+    -- Caudal medido en m3/s
+    public Caudal = real
+    inv c == c >= 0.0;
+
+    public LecturaSensor ::
+        sensor_id : token
+        caudal    : Caudal
+        alerta    : NivelAlerta
+    inv r ==
+        -- Invariante completo: correspondencia biunivoca en los tres niveles
+        ((r.caudal <= 10.0) <=> (r.alerta = <NORMAL>)) and
+        ((r.caudal > 10.0 and r.caudal <= 15.0) <=> (r.alerta = <PRECAUCION>)) and
+        ((r.caudal > 15.0) <=> (r.alerta = <CRITICO>));
+
+instance variables
+    public id : token;
+    public caudal_actual : Caudal;
+
+operations
+    public Sensor: token * Caudal ==> Sensor
+    Sensor(s_id, val) == (
+        id := s_id;
+        caudal_actual := val;
+    );
+
+    public ObtenerId: () ==> token
+    ObtenerId() == return id;
+
+    public ActualizarCaudal: Caudal ==> ()
+    ActualizarCaudal(nuevo_caudal) == (
+        caudal_actual := nuevo_caudal;
+    );
+
+    public GenerarLectura: () ==> LecturaSensor
+    GenerarLectura() == (
+        dcl alerta : NivelAlerta;
+        if caudal_actual > 15.0 then alerta := <CRITICO>
+        elseif caudal_actual > 10.0 then alerta := <PRECAUCION>
+        else alerta := <NORMAL>;
+        
+        return mk_LecturaSensor(id, caudal_actual, alerta);
+    );
+
+end Sensor
