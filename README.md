@@ -4,6 +4,7 @@ Especificación formal en **VDM++** (Overture Tool v3.0.2, VDM-10) y verificaci�
 
 **Curso:** Aspectos Formales de Especificación y Verificación (AFEV)  
 **Institución:** Universidad Nacional de San Agustín de Arequipa (UNSA) — EPIS  
+**Video de sustentación:** https://youtu.be/bUNeQdU5SAA
 
 ## Integrantes
 - Ayamamani Anasco, Francis Willian (`fayamamani@unsa.edu.pe`)
@@ -27,18 +28,11 @@ Especificación formal en **VDM++** (Overture Tool v3.0.2, VDM-10) y verificaci�
 │   ├── ControlRiesgo.q                       # 7 consultas CTL base
 │   ├── ControlRiesgo_ToleranteFallos.xml     # Variante con atasco, Watchdog y Aliviadero
 │   └── ControlRiesgo_ToleranteFallos.q       # 6 consultas CTL de tolerancia a fallos
-├── entrega_final_proyecto/
-│   ├── vdm/                                  # Copia sincronizada de las clases VDM++
-│   ├── latex/                                # Fuente LaTeX (IEEEtran) y figuras
-│   ├── articulo_final_ieee.pdf               # Articulo final compilado
-│   └── articulo_y_diapositivas_unificado.pdf # Documento unificado (articulo + diapositivas)
-└── exposicion_final_proyecto/
-    ├── diapositivas_finales.typ              # Presentacion en Typst
-    ├── diapositivas_finales.pdf              # Diapositivas compiladas
-    └── fig/                                  # Capturas e imagenes de la exposicion
+└── entrega_final_proyecto/
+    └── articulo_y_diapositivas_unificado.pdf # Articulo IEEE y diapositivas en un solo PDF
 ```
 
-## Resumen Técnico
+## Resumen
 
 1. **Especificación Formal en VDM++ (`ControlRiesgo/`):**
    - Modela cinco clases (`Sensor`, `Compuerta`, `Canal`, `Controlador`, `Test`) con acceso directo a `.id` en invariantes y precondiciones.
